@@ -93,6 +93,6 @@ Here are the things you may not do:
 * You may only submit one single algo. If you submit more than one, I'll only use your latest.
 
 ## Submit
-Feel free to submit your own algo using [this form](https://docs.google.com/forms/d/e/1FAIpQLSe3oX8wtAYFGOGmCHX5GBpoYlEjYilGGnHDlR798OF_VDYsxw/viewform?usp=sf_link). 
+Feel free to submit your own algo using [this form](https://docs.google.com/forms/d/e/1FAIpQLSc8TlbrGz2mPecRDrqVwp5huqZFBsAOkwiDz2o3s_aFSFBsyg/viewform?usp=sf_link). 
 
 There's nothing to gain but a good opportunity to learn and have fun.
