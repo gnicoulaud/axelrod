@@ -2,7 +2,7 @@
 R functions for a repeated prisoner's dilemma.
 
 ## Intro
-In the early 1980s, Robert Axelrod organized an competition to identify tactics that, in a prisoner's dilemma repeated 200 times, would generate the highest outcomes. I propose you to start it all again with 'axelrod', a tournament based on the same principle but with a more open competition and taking advantage of the progress made in computer science since.
+In the early 1980s, Robert Axelrod organized a competition to identify tactics that, in a prisoner's dilemma repeated 200 times, would generate the highest outcomes. I propose you to start it all again with 'axelrod', a tournament based on the same principle but with a more open competition and taking advantage of the progress made in computer science since.
 
 The basic idea is to let anyone submit its own algorithm and to test them against each other during a tournament that will take place on the first Friday of March, each year. The winner of the tournament will be the algo with the highest average payoff.
 
@@ -17,8 +17,8 @@ TRUE | 3,3 | 0,5
 FALSE | 5,0 | 1,1
 
 In other words:
-* If both player cooperate [TRUE, TRUE], they will both earn 3 points;
-* If both player defect [FALSE, FALSE], they will both eanr 1 point;
+* If both players cooperate [TRUE, TRUE], they will both earn 3 points;
+* If both players defect [FALSE, FALSE], they will both earn 1 point;
 * If *Player* cooperates while *Opposent* defects [TRUE, FALSE], *Player* will get nothing and *Opposent* will earn 5 points;
 * Symetrically, if *Player* defects while *Opposent* cooperates [FALSE, TRUE], *Player* will earn 5 points and *Opposent* won't get anything.
 
@@ -28,14 +28,14 @@ A match is composed of 200 successive rounds against the same opponent. For each
 All matches will be executed using the **Match** function (see code). Please use it to test your algo.
 
 ## Tournament
-During the tournament, each algo will be confronted with all others **30 times** (since many algos use some randomness, it will help to stabilize the results). Your objective is to create the algo that will has the highest average gain.
+During the tournament, each algo will be confronted with all others **30 times** (since many algos use some randomness, it will help to stabilize the results). Your objective is to create the algo that will generate the highest average gain.
 
-You can easily check that the minimum expected for one given match is equal to 0: this is what would happen to an algo that cooperates systematically with an algo that defects systematically (200 * 0 = 0). Symmetrically, the maximum expected gain equals 1000 (this is what systematic defector would earn in my previous example: 200 * 5 = 1000). More reasonably, your gains on one single match are likely to range between 200 and 600.
+You can easily check that the minimum expected gain for one given match is equal to 0: this is what would happen to an algo that cooperates systematically with an algo that defects systematically (200 * 0 = 0). Symmetrically, the maximum expected gain equals 1000 (this is what the systematic defector would earn in my previous example: 200 * 5 = 1000). More reasonably, your gains on one single match are likely to range between 200 and 600.
 
-You may test the performance of you algo using the **Tournament** function. Mmake sure that you have added your function the list of competitors (**comp**).
+You may test the performance of you algo using the **Tournament** function. Make sure that you have added your function to the list of competitors (**comp**).
 
 ## Specifications
-These are the standards that we impose on developers of algorithms. Its reading is a little technical if you do not know how to code but some important restrictions are accessible to all.
+These are the standards that we impose on developers. Its reading is a little technical if you do not know how to code but some important restrictions are accessible to all.
 
 Your algo must be a R function with the following structure:
 
@@ -82,13 +82,13 @@ Suppose the opponent has defected on the first round. Here is what will happen o
 And so on and so forth...
 
 ## Restrictions
-Here are the things you may not do.
+Here are the things you may not do:
 
 * A 200-round match between your function and `tft` (see above) must not last more than 2 seconds (and that's already a lot);
 * I will impose restrictions on additional packages, please ask before using one;
 * I will not accept identical algos;
 * You may not use other inputs than the arguments of your function (don't even try to look for the name of your opponent);
-* You may not create a *king marker* (e.g. an algo designed to hurt one specific opponent);
+* You may not create a *king maker* (e.g. an algo designed to hurt one specific opponent);
 * You may not exploit a potential bug in the testing environnement: if you find one, please tell me;
 * You may only submit one single algo. If you submit more than one, I'll only use your latest.
 
