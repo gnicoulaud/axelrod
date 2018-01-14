@@ -475,17 +475,17 @@ tester = function(p, o) {
 # Win-Stay-Lose-Shift
 # -------------------------------------------------------------------------- #
 
-# Cooperates first then, cooperates only when the two players made the same
-# move on the last round.
+# Cooperates first then, if the opponent cooperated on the last round, repeat
+# last move; otherwise, switch.
 
 wsls = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
+	r <- length(p)+1
+	if(r == 1) {
 		res <- TRUE
 	} else {
-		res <- tail(p, 1) == tail(o, 1)
+		res <- ifelse(tail(o, 1), tail(p, 1), !tail(p, 1))
 	}
-	return(res)
+	res
 }
 
 
