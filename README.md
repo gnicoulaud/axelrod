@@ -56,7 +56,7 @@ For instance, here is the code for *Tit-For-Tat*:
 tft = function(p, o) {
 	# Number of round already played + 1 = current round
 	round <- length(p)+1
-	# If this is the firt round cooperate (res == TRUE),
+	# If this is the first round cooperate (res == TRUE),
 	# else, just reproduce the last move of the opponent.
 	res <- ifelse(round == 1, TRUE, tail(o, 1))
 	return(res)
