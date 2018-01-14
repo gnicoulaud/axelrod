@@ -1,0 +1,241 @@
+# -------------------------------------------------------------------------- #
+# Tit-for-Tat (a.k.a 'Copycat')
+# -------------------------------------------------------------------------- #
+
+# Cooperates first then reproduct its opponent's last move.
+
+tft = function(p, o) {
+	ifelse(length(p) == 0, TRUE, tail(o, 1))
+}
+
+# -------------------------------------------------------------------------- #
+# AllD (a.k.a 'Always Cheat')
+# -------------------------------------------------------------------------- #
+
+# Allways defects.
+
+alld = function(p, o) {
+	FALSE
+}
+
+# -------------------------------------------------------------------------- #
+# AllC (a.k.a 'Always Cooperate')
+# -------------------------------------------------------------------------- #
+
+# Allways cooperates.
+
+allc = function(p, o) {
+	TRUE
+}
+
+# -------------------------------------------------------------------------- #
+# Grudger
+# -------------------------------------------------------------------------- #
+
+# Cooperates until its opponent defects; if so, defects forever.
+
+grudger = function(p, o) {
+	all(o)
+}
+
+# -------------------------------------------------------------------------- #
+# Detective
+# -------------------------------------------------------------------------- #
+
+# Cooperates, defects, cooperates and cooperates again. If the opponent
+# doesn't relatilates in the 3rd round, defects all the time; else, plays
+# Tit-for-Tat.
+
+detect = function(p, o) {
+	r <- length(p)+1
+	if(r < 5) {
+		res <- as.logical(r != 2)
+	} else {
+		res <- ifelse(o[3], FALSE, o[r-1])
+	}
+	res
+}
+
+# -------------------------------------------------------------------------- #
+# Tit-For-Two-Tats (a.k.a. 'Copykitten')
+# -------------------------------------------------------------------------- #
+
+# Cooperates twice then, only retaliates if the opponent defected twice in a
+# row.
+
+tf2t = function(p, o) {
+	r <- length(p)+1
+	res <- TRUE
+	if(r > 2) res <- ! all(! tail(o, 2))
+	res
+}
+
+# -------------------------------------------------------------------------- #
+# Random
+# -------------------------------------------------------------------------- #
+
+# Cooperates or defects randomly with a 1/2 chance.
+
+rand = function(p, o) {
+	sample(c(T, F), 1)
+}
+
+# -------------------------------------------------------------------------- #
+# Win-Stay-Lose-Shift (a.k.a 'Simpleton' or 'Pavlov')
+# -------------------------------------------------------------------------- #
+
+# If your opponent cooperated with you on the last round, repeat your last
+# move; otherwise, switch.
+
+wsls = function(p, o) {
+	r <- length(p)+1
+	if(r == 1) {
+		res <- TRUE
+	} else {
+		res <- ifelse(tail(o, 1), tail(p, 1), !tail(p, 1))
+	}
+	res
+}
+
+# -------------------------------------------------------------------------- #
+# Alternate
+# -------------------------------------------------------------------------- #
+
+# Randomly cooperate or defect (prob = 1/2) then alternates regardless of
+# what the opponent does.
+
+alt = function(p, o) {
+	ifelse(length(p) == 0, sample(c(T, F), 1), !tail(p, 1))
+}
+
+# -------------------------------------------------------------------------- #
+# Generous Tit-For-Tat
+# -------------------------------------------------------------------------- #
+
+# Same as TFT but 'forgives' defections in 1/3 of cases.
+
+gtft = function(p, o) {
+	r <- length(p)+1
+	res <- TRUE
+	if(r > 1 && !tail(o, 1)) {
+		res <- sample(c(F, T), 1,, 2:1/3) 
+	}	
+	res
+}
+
+# -------------------------------------------------------------------------- #
+# .match
+# -------------------------------------------------------------------------- #
+
+# Runs a n-round match between 'f1' and 'f2' and returns a list with S, a
+# matrix of each algo's mooves and P, a matrix containing their respective
+# gains.
+# You may also modify the payment matrix with :
+# * t: the points earned by defectors when their opponents cooperate,
+# * r: the points earned by both algos cooperate,
+# * p: the points earned by both algos defect and
+# * s: the points earned by cooperators when their opponents defect.
+# Special case: if 'n' is set to NULL, the number of rounds goes random and
+# may be anything from 'n.min' to 'n.max'.
+
+.match = function(f1, f2, n = 200, t = 5, r = 3, p = 1, s = 0, n.min = 100,
+	n.max = 1000) {
+	n1 <- deparse(substitute(f1))
+	n2 <- deparse(substitute(f2))
+	if(! is(f1, "function") | ! is(f2, "function"))
+		stop("'f1' and 'f2' must be functions")
+	n <- as.integer(n)
+	if(n < 1) stop("'n' must be as least 1")
+	if(any(diff(c(t, r, p, s)) >= 0))
+		stop("check that: t > r > p > s")
+	m <- c(p, s, t, r, p, t, s, r)
+	dim(m) <- rep(2, 3)
+	s1 <- s2 <- logical(0)
+	p1 <- p2 <- integer(0)
+	if(is.null(n)) n <- sample(n.min:n.max, 1)
+	for(i in 1:n) {
+		si1 <- f1(s1, s2)
+		si2 <- f2(s2, s1)
+		s1 <- c(s1, si1)
+		s2 <- c(s2, si2)
+		p1 <- c(p1, m[si1+1, si2+1, 1])
+		p2 <- c(p2, m[si1+1, si2+1, 2])
+	}
+	S <- cbind(s1, s2)
+	P <- cbind(p1, p2)
+	colnames(S) <- colnames(P) <- c(n1, n2)
+	list(S = S, P = P)
+}
+
+# -------------------------------------------------------------------------- #
+# .tournament
+# -------------------------------------------------------------------------- #
+
+# Runs a tournament with algos provided in x, which must be a named list of
+# algos. For other arguments, see .match. (You need 'gtools' to run it.)
+
+.tournament = function(x, n = 200, t = 5, r = 3, p = 1, s = 0, n.min = 100,
+	n.max = 1000) {
+	I <- gtools:::combinations(N <- length(x), 2)
+	ans <- list()
+	length(ans) <- N
+	names(ans) <- names(x)
+	for(i in 1:nrow(I)) {
+		j <- I[i, 1]
+		k <- I[i, 2]
+		z <- .match(x[[j]], x[[k]], n, t, r, p, s, n.min, n.max)
+		v <- unname(colSums(z$P))
+		ans[[j]] <- c(ans[[j]], v[1])
+		ans[[k]] <- c(ans[[k]], v[2])
+	}
+	sapply(ans, mean)
+}
+
+# -------------------------------------------------------------------------- #
+# .evolution
+# -------------------------------------------------------------------------- #
+
+.evolution = function(x, pop = 1, n = 200, t = 5, r = 3, p = 1,
+	s = 0, n.min = 100, n.max = 1000, cols = NULL, brk = 100) {
+	
+	if(is.null(cols)) cols <- rainbow(length(x))
+	if(length(pop) == 1) pop <- rep(pop, length(x))
+	nms <- names(x)
+	sv <- ix <- unlist(lapply(1:length(pop), function(i) rep(i, pop[i])))
+	X <- x[ix]
+	cc <- cols[ix]
+	N <- length(X)
+	t2xy <- function(t) list(x = cos(-2*pi*t), y = sin(-2*pi*t))
+	P <- t2xy(seq(0, 1, len = N))
+	op <- par(mar = rep(5, 4))
+	lim <- c(-2, 1.5)
+	plot(P$x, P$y, cex = 2, axes = FALSE, pch = 16, ylab = NA, xlab = NA,
+		xlim = lim, ylim = lim, main = "Init", cex.main = .8,
+		col = cc)
+	legend(-2, 1.5, legend = names(x), col = cols, pch = 16, cex = .8,
+		bty = "n")
+	i <- 0
+	while(length(unique(ix)) > 1) {
+		ans <- .tournament(X, n, t, r, p, s, n.min, n.max)
+		si <- order(ans)
+		rmv <- tail(si, 5)
+		dup <- head(si, 5)
+		X[rmv] <- X[dup]
+		cc[rmv] <- cc[dup]
+		ix[rmv] <- ix[dup]
+		plot(P$x, P$y, cex = 2, axes = FALSE, pch = 16, ylab = NA,
+			xlab = NA, xlim = lim, ylim = lim,
+			main = paste("Stage", i <- i+1),
+			cex.main = .8, col = cc)
+		legend(-2, 1.5, legend = nms, col = cols, pch = 16,
+			cex = .8, bty = "n")
+		if(i == brk) break()
+	}
+	par(op)
+	res <- rep(0, length(x))
+	names(res) <- nms
+	for(i in 1:length(x)) {
+		res[i] <- length(ix[ix == i])
+	}
+	res
+}
