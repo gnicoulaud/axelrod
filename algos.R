@@ -252,7 +252,7 @@ grofman = function(p, o, n = 2000) {
 	if(r %in% 1:2) {
 		res <- TRUE
 	}
-	if(ro %in% 3:7) {
+	if(r %in% 3:7) {
 		res <- tail(o, 1)
 	}
 	if(r > 7) {
@@ -408,7 +408,6 @@ champion = function(p, o, n = 2000) {
 # It defects on the first move. If the opponent ever defects, Tester
 # 'apologies' by cooperating and then plays TFT for the rest of the game.
 # Otherwise Tester alternates cooperation and defection.
-# This strategy came 46th in Axelrod’s second tournament.
 
 # Not sure I properly interpreded it. I assumed it defects first to see how
 # the opponent reacts to its defection. So it must do something at round 2
@@ -444,7 +443,6 @@ tester = function(p, o, n = 2000) {
 # 2. It defects on the last 2 moves.
 # 3. Every 15 moves it makes use of a chi-squared test to check if the
 #    opponent is playing randomly.
-# This strategy came 6th in Axelrod's original tournament.
 
 
 # -------------------------------------------------------------------------- #
@@ -464,7 +462,6 @@ tester = function(p, o, n = 2000) {
 #      by at least 3.0 standard deviations.
 # A ‘fresh start’ is a sequence of two cooperations followed by an
 # assumption that the game has just started (everything is forgotten).
-# This strategy came 2nd in Axelrod’s original tournament
 
 
 # -------------------------------------------------------------------------- #
@@ -481,7 +478,6 @@ tester = function(p, o, n = 2000) {
 #    another strategy from a preliminary tournament called 'Analogy'. If so it
 #    plays Tit For Tat. If not it cooperates and randomly defects every 5 to
 #    15 moves.
-# This strategy came 9th in Axelrod's original tournament.
 
 
 # -------------------------------------------------------------------------- #
@@ -494,7 +490,6 @@ tester = function(p, o, n = 2000) {
 # continuously updated during play and the strategy attempts to maximise the
 # long term play. Note that the initial values are:
 # P(C|C) = P(C|D) = 1/2
-# This strategy came 10th in Axelrod’s original tournament.
 
 
 # -------------------------------------------------------------------------- #
@@ -504,7 +499,6 @@ tester = function(p, o, n = 2000) {
 # This strategy plays Tit For Tat, always defecting if the opponent defects
 # but cooperating when the opponent cooperates with a gradually decreasing
 # probability until it is only 1/2.
-# This strategy came 11th in Axelrod’s original tournament.
 
 
 # -------------------------------------------------------------------------- #
@@ -517,4 +511,3 @@ tester = function(p, o, n = 2000) {
 # Furthermore, if after round 130 the strategy is losing then P is also
 # adjusted.
 # Original code not available...
-# This strategy came 14th in Axelrod’s original tournament.
