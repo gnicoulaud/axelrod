@@ -23,16 +23,16 @@ In other words:
 * Symetrically, if *Player* defects while *Opposent* cooperates [FALSE, TRUE], *Player* will earn 5 points and *Opposent* won't get anything.
 
 ## Match
-A match is composed of 200 successive rounds against the same opponent. For each round, your algo will receive the history of all the moves it made and all the moves its opponent made since the beginning of the match *but nothing else*.
+A match is composed of 2000 successive rounds against the same opponent (for now: starting in 2019, the number of rounds will be unknown to participants). For each round, your algo will receive the history of all the moves it made and all the moves its opponent made since the beginning of the match *but nothing else*.
 
-All matches will be executed using the **Match** function (see code). Please use it to test your algo.
+All matches will be executed using the **.match** function (see **utilities.R**). Please use it to test your algo.
 
 ## Tournament
-During the tournament, each algo will be confronted with all others **30 times** (since many algos use some randomness, it will help to stabilize the results). Your objective is to create the algo that will generate the highest average gain.
+During the tournament, each algo will be confronted with all others. Your objective is to create the algo that will generate the highest average gain.
 
-You can easily check that the minimum expected gain for one given match is equal to 0: this is what would happen to an algo that cooperates systematically with an algo that defects systematically (200 * 0 = 0). Symmetrically, the maximum expected gain equals 1000 (this is what the systematic defector would earn in my previous example: 200 * 5 = 1000). More reasonably, your gains on one single match are likely to range between 200 and 600.
+You can easily check that the minimum expected gain for one given match is equal to 0: this is what would happen to an algo that cooperates systematically with an algo that defects systematically (2,000 * 0 = 0). Symmetrically, the maximum expected gain equals 10,000 (this is what the systematic defector would earn in my previous example: 2,000 * 5 = 10,000). More reasonably, your gains on one single match are likely to range between 2,000 and 6,000 points.
 
-You may test the performance of you algo using the **Tournament** function. Make sure that you have added your function to the list of competitors (**comp**).
+You may test the performance of you algo using the **.tournament** function (see **utilities.R**).
 
 ## Specifications
 These are the standards that we impose on developers. Its reading is a little technical if you do not know how to code but some important restrictions are accessible to all.
@@ -84,7 +84,7 @@ And so on and so forth...
 ## Restrictions
 Here are the things you may not do:
 
-* A 200-round match between your function and `tft` (see above) must not last more than 2 seconds (and that's already a lot);
+* A 2000-rounds match between your function and `tft` (see above) must not last more than 2 seconds (and that's already a lot);
 * I will impose restrictions on additional packages, please ask before using one;
 * I will not accept identical algos;
 * You may not use other inputs than the arguments of your function (don't even try to look for the name of your opponent);
