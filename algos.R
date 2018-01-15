@@ -10,7 +10,7 @@
 
 # Always cooperates.
 
-allc = function(p, o) TRUE
+allc = function(p, o, n = 2000) TRUE
 
 
 # -------------------------------------------------------------------------- #
@@ -19,7 +19,7 @@ allc = function(p, o) TRUE
 
 # Always defects.
 
-alld = function(p, o) FALSE
+alld = function(p, o, n = 2000) FALSE
 
 
 # -------------------------------------------------------------------------- #
@@ -29,7 +29,7 @@ alld = function(p, o) FALSE
 # Randomly cooperate or defect (prob = 1/2) on the 1st round then alternates
 # regardless of what the opponent does.
 
-alt = function(p, o) {
+alt = function(p, o, n = 2000) {
 	ifelse(length(p) == 0, sample(c(T, F), 1), !tail(p, 1))
 }
 
@@ -40,7 +40,7 @@ alt = function(p, o) {
 
 # Cooperates until the opponent defects and then defects forever.
 
-grudger = function(p, o) {
+grudger = function(p, o, n = 2000) {
 	all(o)
 }
 
@@ -51,7 +51,7 @@ grudger = function(p, o) {
 
 # This strategy plays randomly (prob = 1/2) disregarding the history of play.
 
-rand = function(p, o) {
+rand = function(p, o, n = 2000) {
 	sample(c(TRUE, FALSE), 1)
 }
 
@@ -64,7 +64,7 @@ rand = function(p, o) {
 # doesn't relatilates in the 3rd round, defects all the time; otherwise plays
 # Tit-for-Tat.
 
-detect = function(p, o) {
+detect = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r < 5) {
 		res <- as.logical(r != 2)
@@ -82,7 +82,7 @@ detect = function(p, o) {
 # Begins by cooperating and then simply repeats the last moves made by the
 # opponent.
 
-tft = function(p, o) {
+tft = function(p, o, n = 2000) {
 	ifelse(length(p) == 0, TRUE, tail(o, 1))
 }
 
@@ -93,7 +93,7 @@ tft = function(p, o) {
 
 # Same as TFT but 'forgives' defections in 1/3 of cases.
 
-gtft = function(p, o) {
+gtft = function(p, o, n = 2000) {
 	res <- TRUE
 	if(length(p) > 0 && !tail(o, 1)) res <- sample(c(F, T), 1,, 2:1) 
 	res
@@ -106,7 +106,7 @@ gtft = function(p, o) {
 
 # Like TFT but only retaliates after two defections rather than one.
 
-tf2t = function(p, o) {
+tf2t = function(p, o, n = 2000) {
 	res <- TRUE
 	if(length(p) > 1) res <- ! all(! tail(o, 2))
 	res
@@ -120,7 +120,7 @@ tf2t = function(p, o) {
 # Cooperates first then, if the opponent cooperated on the last round, repeat
 # last move; otherwise, switch.
 
-wsls = function(p, o) {
+wsls = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r == 1) {
 		res <- TRUE
@@ -139,7 +139,7 @@ wsls = function(p, o) {
 # collaborates with a probability of 1/8 if it has collaborated on the last
 # round or with a probability of 1/4 otherwise.
 
-zdgtft2 = function(p, o) {
+zdgtft2 = function(p, o, n = 2000) {
 	if(length(p) == 0) {
 		res <- TRUE
 	} else {
@@ -163,7 +163,7 @@ zdgtft2 = function(p, o) {
 # opponent defected, it will collaborate with a probability of 1/2 if it
 # collaborated and 0 otherwise.
 
-extort2 = function(p, o) {
+extort2 = function(p, o, n = 2000) {
 	if(length(p) == 0) {
 		res <- TRUE
 	} else {
@@ -199,7 +199,7 @@ extort2 = function(p, o) {
 
 # (*) I've assumed that if none defect then a_i = 0.
 
-nydegger = function(p, o) {
+nydegger = function(p, o, n = 2000) {
 	r <- length(p)+1
 	V <- c(1, 6, 7, 17, 22, 23, 26, 29, 30, 31, 33, 38, 39, 45, 49, 54, 55,
 		 58, 61)
@@ -247,7 +247,7 @@ nydegger = function(p, o) {
 # Grofman cooperates if both players selected the same action in the previous
 # round, and otherwise cooperates randomly with probability 2/7
 
-grofman = function(p, o) {
+grofman = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r %in% 1:2) {
 		res <- TRUE
@@ -274,7 +274,7 @@ grofman = function(p, o) {
 # with a single defection but the number of defections increases by 1 each
 # time the opponent defects when this strategy cooperates.
 
-shubik = function(p, o) {
+shubik = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r == 1) {
 		res <- TRUE
@@ -296,7 +296,7 @@ shubik = function(p, o) {
 # first 10 moves and then plays Grudger (*).
 # (*) I've assumed it only plays Grudger using data from round 10 onward...
 
-davis = function(p, o) {
+davis = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r < 11) {
 		res <- TRUE
@@ -314,7 +314,7 @@ davis = function(p, o) {
 # This strategy plays Tit For Tat, always defecting if the opponent defects
 # but cooperating when the opponent cooperates with probability .9.
 
-joss = function(p, o) {
+joss = function(p, o, n = 2000) {
 	if(length(p) == 0) {
 		res <- TRUE
 	} else {
@@ -336,7 +336,7 @@ joss = function(p, o) {
 # cooperates 10% less often than the opponent has in the previous 10 rounds.
 # This strategy came 13th in Axelrod’s original tournament.
 
-tullock = function(p, o) {
+tullock = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r < 12) {
 		res <- TRUE
@@ -356,7 +356,7 @@ tullock = function(p, o) {
 # defects with a probability equal to the proportion of rounds that the
 # opponent has defected.
 
-eatherley = function(p, o) {
+eatherley = function(p, o, n = 2000) {
 	if(all(o)) {
 		res <- TRUE
 	} else {
@@ -380,15 +380,16 @@ eatherley = function(p, o) {
 
 # I assume it means defected *by the opponent*.
 
-champion = function(p, o) {
+champion = function(p, o, n = 2000) {
 	r <- length(p)+1
-	if(r %in% 1:100) {
+	v <- round(c(n/20, n/20+n*4/50))
+	if(r %in% 1:v[1]) {
 		res <- TRUE
 	}
-	if(r %in% 101:260) {
+	if(r %in% (v[1]+1):(v[2])) {
 		res <- tail(o, 1)
 	}
-	if(r > 260) {
+	if(r > v[2]) {
 		z <- sum(o)/length(o)
 		c1 <- !tail(o, 1)
 		c2 <- z < .6
@@ -415,7 +416,7 @@ champion = function(p, o) {
 # Also, that version plays TFT if the opponent reacted negatively on the round
 # and alternates otherwhise.
 
-tester = function(p, o) {
+tester = function(p, o, n = 2000) {
 	r <- length(p)+1
 	if(r %in% 1:2) {
 		res <- c(FALSE, TRUE)[r]
@@ -533,9 +534,9 @@ tester = function(p, o) {
 # A variation on 'Generous Tit-For-Tat' that systematically defaults on the
 # last round (hence, 'In Cauda Venenum').
 
-gtfticv = function(p, o) {
+gtfticv = function(p, o, n = 2000) {
 	r <- length(p)+1
-	if(r %in% c(1, 2000)) {
+	if(r %in% c(1, n)) {
 		res <- r == 1
 	} else {
 		res <- ifelse(tail(o, 1), T, sample(c(T, F), 1, p = 1:2))
