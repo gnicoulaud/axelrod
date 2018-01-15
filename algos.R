@@ -334,7 +334,6 @@ joss = function(p, o, n = 2000) {
 
 # This strategy cooperates for the first 11 rounds and then (randomly)
 # cooperates 10% less often than the opponent has in the previous 10 rounds.
-# This strategy came 13th in Axelrod’s original tournament.
 
 tullock = function(p, o, n = 2000) {
 	r <- length(p)+1
