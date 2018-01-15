@@ -2,23 +2,88 @@
 # Basic algos
 # ========================================================================== #
 
-# All details found on:
-# https://media.readthedocs.org/pdf/axelrod/latest/axelrod.pdf
-# Page 47+
+# These are the algos included into the tournament anyway.
+
+# -------------------------------------------------------------------------- #
+# AllC
+# -------------------------------------------------------------------------- #
+
+# Always cooperates.
+
+allc = function(p, o) TRUE
+
+
+# -------------------------------------------------------------------------- #
+# AllD
+# -------------------------------------------------------------------------- #
+
+# Always defects.
+
+alld = function(p, o) FALSE
+
+
+# -------------------------------------------------------------------------- #
+# Alternate
+# -------------------------------------------------------------------------- #
+
+# Randomly cooperate or defect (prob = 1/2) on the 1st round then alternates
+# regardless of what the opponent does.
+
+alt = function(p, o) {
+	ifelse(length(p) == 0, sample(c(T, F), 1), !tail(p, 1))
+}
+
+
+# -------------------------------------------------------------------------- #
+# Grudger
+# -------------------------------------------------------------------------- #
+
+# Cooperates until the opponent defects and then defects forever.
+
+grudger = function(p, o) {
+	all(o)
+}
+
+
+# -------------------------------------------------------------------------- #
+# Random
+# -------------------------------------------------------------------------- #
+
+# This strategy plays randomly (prob = 1/2) disregarding the history of play.
+
+rand = function(p, o) {
+	sample(c(TRUE, FALSE), 1)
+}
+
+
+# -------------------------------------------------------------------------- #
+# Detective
+# -------------------------------------------------------------------------- #
+
+# Cooperates, defects, cooperates and cooperates again. If the opponent
+# doesn't relatilates in the 3rd round, defects all the time; otherwise plays
+# Tit-for-Tat.
+
+detect = function(p, o) {
+	r <- length(p)+1
+	if(r < 5) {
+		res <- as.logical(r != 2)
+	} else {
+		res <- ifelse(o[3], FALSE, o[r-1])
+	}
+	res
+}
+
 
 # -------------------------------------------------------------------------- #
 # Tit-For-Tat
 # -------------------------------------------------------------------------- #
 
-# This strategy was referred to as the ‘simplest’ strategy submitted. It
-# begins by cooperating and then simply repeats the last moves made by the
+# Begins by cooperating and then simply repeats the last moves made by the
 # opponent.
-# Tit for Tat came 1st in Axelrod’s original tournament
 
 tft = function(p, o) {
-	round <- length(p)+1
-	res <- ifelse(round == 1, TRUE, tail(o, 1))
-	return(res)
+	ifelse(length(p) == 0, TRUE, tail(o, 1))
 }
 
 
@@ -29,17 +94,9 @@ tft = function(p, o) {
 # Same as TFT but 'forgives' defections in 1/3 of cases.
 
 gtft = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
-		res <- TRUE
-	} else {
-		if(tail(o, 1)) {
-			res <- TRUE
-		} else {
-			res <- sample(c(FALSE, TRUE), 1, prob = c(2/3, 1/3))
-		} 
-	}	
-	return(res)
+	res <- TRUE
+	if(length(p) > 0 && !tail(o, 1)) res <- sample(c(F, T), 1,, 2:1) 
+	res
 }
 
 
@@ -50,13 +107,27 @@ gtft = function(p, o) {
 # Like TFT but only retaliates after two defections rather than one.
 
 tf2t = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:2) {
+	res <- TRUE
+	if(length(p) > 1) res <- ! all(! tail(o, 2))
+	res
+}
+
+
+# -------------------------------------------------------------------------- #
+# Win-Stay-Lose-Shift
+# -------------------------------------------------------------------------- #
+
+# Cooperates first then, if the opponent cooperated on the last round, repeat
+# last move; otherwise, switch.
+
+wsls = function(p, o) {
+	r <- length(p)+1
+	if(r == 1) {
 		res <- TRUE
 	} else {
-		res <- ! all(! tail(o, 2))
+		res <- ifelse(tail(o, 1), tail(p, 1), !tail(p, 1))
 	}
-	return(res)
+	res
 }
 
 
@@ -64,23 +135,22 @@ tf2t = function(p, o) {
 # Zero-Determinant GTFT 2
 # -------------------------------------------------------------------------- #
 
-# Another variant of TFT : always collaborates if the opponent did. When
-# the opponent defects, it collaborates with a probability of 1/8 if it has
-# collaborated on the last round or with a probability of 1/4 otherwise. 
+# Always collaborates if the opponent did. When the opponent defects, it
+# collaborates with a probability of 1/8 if it has collaborated on the last
+# round or with a probability of 1/4 otherwise.
 
 zdgtft2 = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
+	if(length(p) == 0) {
 		res <- TRUE
 	} else {
 		if(tail(o, 1)) {
 			res <- TRUE
 		} else {
 			z <- ifelse(tail(p, 1), 1/8, 1/4)
-			res <- sample(c(TRUE, FALSE), 1, prob = c(z, 1-z))
+			res <- sample(c(T, F), 1,, c(z, 1-z))
 		}
 	}
-	return(res)
+	res
 }
 
 
@@ -94,8 +164,7 @@ zdgtft2 = function(p, o) {
 # collaborated and 0 otherwise.
 
 extort2 = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
+	if(length(p) == 0) {
 		res <- TRUE
 	} else {
 		if(tail(o, 1)) {
@@ -107,26 +176,6 @@ extort2 = function(p, o) {
 	}
 	return(res)
 }
-
-
-# -------------------------------------------------------------------------- #
-# Tideman and Chieruzzi
-# -------------------------------------------------------------------------- #
-
-# This strategy begins by playing Tit For Tat and then things get slightly
-# complicated:
-# 1. Every run of defections played by the opponent increases the number of
-#    defections that this strategy retaliates with by 1.
-# 2. The opponent is given a ‘fresh start’ if:
-#    - it is 10 points behind this strategy
-#    - and it has not just started a run of defections
-#    - and it has been at least 20 rounds since the last ‘fresh start’
-#    - and there are more than 10 rounds remaining in the tournament
-#    - and the total number of defections differs from a 50-50 random sample
-#      by at least 3.0 standard deviations.
-# A ‘fresh start’ is a sequence of two cooperations followed by an
-# assumption that the game has just started (everything is forgotten).
-# This strategy came 2nd in Axelrod’s original tournament
 
 
 # -------------------------------------------------------------------------- #
@@ -148,45 +197,44 @@ extort2 = function(p, o) {
 # A \in {1,6,7,17,22,23,26,29,30,31,33,38,39,45,49,54,55,58,61}
 # This strategy came 3rd in Axelrod’s original tournament.
 
-# (*) I assume that if none defect then a_i = 0. 
+# (*) I've assumed that if none defect then a_i = 0.
 
 nydegger = function(p, o) {
-	round <- length(p)+1
+	r <- length(p)+1
 	V <- c(1, 6, 7, 17, 22, 23, 26, 29, 30, 31, 33, 38, 39, 45, 49, 54, 55,
 		 58, 61)
-	if(round %in% 1:3) {
-		if(round == 1) {
+	if(r %in% 1:3) {
+		if(r == 1) {
 			res <- TRUE
 		}
-		if(round == 2) {
+		if(r == 2) {
 			res <- tail(o, 1)
 		}
-		if(round == 3) {
-			tmp <- tail(o, 1)
-			if((p[1] & !o[1]) & (!p[2] & o[2])) tmp <- FALSE
-			res <- tmp
+		if(r == 3) {
+			res <- tail(o, 1)
+			if((p[1] & !o[1]) & (!p[2] & o[2])) res <- FALSE
 		}
 	} else {
 		a1 <- a2 <- a3 <- 0
-		if(!p[round-1] & !o[round-1]) {
+		if(!p[r-1] & !o[r-1]) {
 			a1 <- 3
 		} else {
-			a1 <- ifelse(!o[round-1], 2, 1)
+			a1 <- ifelse(!o[r-1], 2, 1)
 		}
-		if(!p[round-2] & !o[round-2]) {
+		if(!p[r-2] & !o[r-2]) {
 			a2 <- 3
 		} else {
-			a2 <- ifelse(!o[round-2], 2, 1)
+			a2 <- ifelse(!o[r-2], 2, 1)
 		}
-		if(!p[round-3] & !o[round-3]) {
+		if(!p[r-3] & !o[r-3]) {
 			a3 <- 3
 		} else {
-			a3 <- ifelse(!o[round-3], 2, 1)
+			a3 <- ifelse(!o[r-3], 2, 1)
 		}
 		A <- 16*a1+4*a2+a3
 		res <- ! A %in% V
 	}
-	return(res)
+	res
 }
 
 
@@ -198,24 +246,23 @@ nydegger = function(p, o) {
 # returns the opponent’s last action for the next 5. For the rest of the game
 # Grofman cooperates if both players selected the same action in the previous
 # round, and otherwise cooperates randomly with probability 2/7
-# This strategy came 4th in Axelrod’s original tournament.
 
 grofman = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:2) {
+	r <- length(p)+1
+	if(r %in% 1:2) {
 		res <- TRUE
 	}
-	if(round %in% 3:7) {
+	if(ro %in% 3:7) {
 		res <- tail(o, 1)
 	}
-	if(round > 7) {
+	if(r > 7) {
 		if(tail(p, 1) == tail(o, 1)) {
 			res <- TRUE
 		} else {
-			res <- sample(c(TRUE, FALSE), 1, prob = c(2/7, 5/7))
+			res <- sample(c(T, F), 1, prob = c(2, 5)/7)
 		}
 	}
-	return(res)
+	res
 }
 
 
@@ -226,21 +273,166 @@ grofman = function(p, o) {
 # This strategy plays a modification of Tit For Tat. It starts by retaliating
 # with a single defection but the number of defections increases by 1 each
 # time the opponent defects when this strategy cooperates.
-# This strategy came 5th in Axelrod’s original tournament.
 
 shubik = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
+	r <- length(p)+1
+	if(r == 1) {
 		res <- TRUE
 	} else {
 		n <- max(1, sum(p & !o))
 		d <- tail(which(!o), 1)
-		punish <- ifelse(length(d) == 0, FALSE, round <= d+n)
+		punish <- ifelse(length(d) == 0, FALSE, r <= d+n)
 		res <- tail(o, 1) & !punish
 	}
-	return(res)
+	res
 }
 
+
+# -------------------------------------------------------------------------- #
+# Davis
+# -------------------------------------------------------------------------- #
+
+# This strategy is a modification of Grudger. It starts by cooperating for the
+# first 10 moves and then plays Grudger (*).
+# (*) I've assumed it only plays Grudger using data from round 10 onward...
+
+davis = function(p, o) {
+	r <- length(p)+1
+	if(r < 11) {
+		res <- TRUE
+	} else {
+		res <- all(o[10:length(o)])
+	}
+	res
+}
+
+
+# -------------------------------------------------------------------------- #
+# Joss
+# -------------------------------------------------------------------------- #
+
+# This strategy plays Tit For Tat, always defecting if the opponent defects
+# but cooperating when the opponent cooperates with probability .9.
+
+joss = function(p, o) {
+	if(length(p) == 0) {
+		res <- TRUE
+	} else {
+		if(tail(o, 1)) {
+			res <- sample(c(T, F), 1, prob = c(.9, .1))
+		} else {
+			res <- FALSE
+		}
+	}
+	res
+}
+
+
+# -------------------------------------------------------------------------- #
+# Tullock
+# -------------------------------------------------------------------------- #
+
+# This strategy cooperates for the first 11 rounds and then (randomly)
+# cooperates 10% less often than the opponent has in the previous 10 rounds.
+# This strategy came 13th in Axelrod’s original tournament.
+
+tullock = function(p, o) {
+	r <- length(p)+1
+	if(r < 12) {
+		res <- TRUE
+	} else {
+		z <- .9 * sum(tail(o, 10))/10
+		res <- sample(c(T, F), 1, prob = c(z, 1-z))
+	}
+	res
+}
+
+
+# -------------------------------------------------------------------------- #
+# Eatherley
+# -------------------------------------------------------------------------- #
+
+# Generally cooperates unless the opponent defects, in which case Eatherley
+# defects with a probability equal to the proportion of rounds that the
+# opponent has defected.
+
+eatherley = function(p, o) {
+	if(all(o)) {
+		res <- TRUE
+	} else {
+		z <- sum(!o)/length(o)
+		res <- sample(c(F, T), 1, prob = c(z, 1-z))
+	}
+	res
+}
+
+# -------------------------------------------------------------------------- #
+# Champion
+# -------------------------------------------------------------------------- #
+
+# Operates in three phases: The first phase lasts for the first 1/20-th of the
+# rounds and Champion always cooperates. In the second phase, lasting until
+# 4/50-th of the rounds have passed, Champion mirrors its opponent’s last
+# last move. In the last phase, Champion cooperates unless
+# - the opponent defected on the last round, and
+# - the opponent has cooperated less than 60% of the rounds, and
+# - a random number is greater than the proportion of rounds defected (*).
+
+# I assume it means defected *by the opponent*.
+
+champion = function(p, o) {
+	r <- length(p)+1
+	if(r %in% 1:100) {
+		res <- TRUE
+	}
+	if(r %in% 101:260) {
+		res <- tail(o, 1)
+	}
+	if(r > 260) {
+		z <- sum(o)/length(o)
+		c1 <- !tail(o, 1)
+		c2 <- z < .6
+		c3 <- runif(1) > (1-z)
+		res <- ifelse(c1 & c2 & c3, FALSE, TRUE)
+	}
+	res
+}
+
+
+# -------------------------------------------------------------------------- #
+# Tester
+# -------------------------------------------------------------------------- #
+
+# This strategy is a TFT variant that attempts to exploit certain strategies.
+# It defects on the first move. If the opponent ever defects, Tester
+# 'apologies' by cooperating and then plays TFT for the rest of the game.
+# Otherwise Tester alternates cooperation and defection.
+# This strategy came 46th in Axelrod’s second tournament.
+
+# Not sure I properly interpreded it. I assumed it defects first to see how
+# the opponent reacts to its defection. So it must do something at round 2
+# given it doesn't know yet what the reaction is. I assumed it collaborates.
+# Also, that version plays TFT if the opponent reacted negatively on the round
+# and alternates otherwhise.
+
+tester = function(p, o) {
+	r <- length(p)+1
+	if(r %in% 1:2) {
+		res <- c(FALSE, TRUE)[r]
+	} else {
+		if(! o[2]) {
+			res <- ifelse(r == 3, TRUE, tail(o, 1))
+		} else {
+			res <- !tail(p, 1)
+		}
+	}
+	res
+}
+
+
+# ========================================================================== #
+# Not implemented (yet)
+# ========================================================================== #
 
 # -------------------------------------------------------------------------- #
 # Stein and Rapoport
@@ -255,38 +447,23 @@ shubik = function(p, o) {
 
 
 # -------------------------------------------------------------------------- #
-# Grudger
+# Tideman and Chieruzzi
 # -------------------------------------------------------------------------- #
 
-# This strategy cooperates until the opponent defects and then defects
-# forever.
-# This strategy came 7th in Axelrod’s original tournament.
-
-grudger = function(p, o) {
-	res <- all(o)
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
-# Davis
-# -------------------------------------------------------------------------- #
-
-# This strategy is a modification of Grudger. It starts by cooperating for the
-# first 10 moves and then plays Grudger (*).
-# This strategy came 8th in Axelrod’s original tournament.
-
-# (*) I've assumed it only plays Grudger using data from round 10 onward...
-
-davis = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:10) {
-		res <- TRUE
-	} else {
-		res <- all(o[10:length(o)])
-	}
-	return(res)
-}
+# This strategy begins by playing Tit For Tat and then things get slightly
+# complicated:
+# 1. Every run of defections played by the opponent increases the number of
+#    defections that this strategy retaliates with by 1.
+# 2. The opponent is given a ‘fresh start’ if:
+#    - it is 10 points behind this strategy
+#    - and it has not just started a run of defections
+#    - and it has been at least 20 rounds since the last ‘fresh start’
+#    - and there are more than 10 rounds remaining in the tournament
+#    - and the total number of defections differs from a 50-50 random sample
+#      by at least 3.0 standard deviations.
+# A ‘fresh start’ is a sequence of two cooperations followed by an
+# assumption that the game has just started (everything is forgotten).
+# This strategy came 2nd in Axelrod’s original tournament
 
 
 # -------------------------------------------------------------------------- #
@@ -330,49 +507,6 @@ davis = function(p, o) {
 
 
 # -------------------------------------------------------------------------- #
-# Joss
-# -------------------------------------------------------------------------- #
-
-# This strategy plays Tit For Tat, always defecting if the opponent defects
-# but cooperating when the opponent cooperates with probability .9.
-# This strategy came 12th in Axelrod’s original tournament.
-
-joss = function(p, o) {
-	round <- length(p)+1
-	if(round == 1) {
-		res <- TRUE
-	} else {
-		if(tail(o, 1)) {
-			res <- sample(c(TRUE, FALSE), 1, prob = c(.9, .1))
-		} else {
-			res <- FALSE
-		}
-	}
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
-# Tullock
-# -------------------------------------------------------------------------- #
-
-# This strategy cooperates for the first 11 rounds and then (randomly)
-# cooperates 10% less often than the opponent has in the previous 10 rounds.
-# This strategy came 13th in Axelrod’s original tournament.
-
-tullock = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:11) {
-		res <- TRUE
-	} else {
-		z <- .9 * sum(tail(o, 10))/10
-		res <- sample(c(TRUE, FALSE), 1, prob = c(z, 1-z))
-	}
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
 # Unnamed Strategy
 # -------------------------------------------------------------------------- #
 
@@ -385,157 +519,11 @@ tullock = function(p, o) {
 # This strategy came 14th in Axelrod’s original tournament.
 
 
-# -------------------------------------------------------------------------- #
-# Eatherley
-# -------------------------------------------------------------------------- #
-
-# This strategy was submitted by Graham Eatherley to Axelrod’s second
-# tournament and generally cooperates unless the opponent defects, in which
-# case Eatherley defects with a probability equal to the proportion of rounds
-# that the opponent has defected.
-# This strategy came in Axelrod’s second tournament.
-
-eatherley = function(p, o) {
-	round <- length(p)+1
-	if(all(o)) {
-		res <- TRUE
-	} else {
-		z <- sum(!o)/length(o)
-		res <- sample(c(FALSE, TRUE), 1, prob = c(z, 1-z))
-	}
-	return(res)
-}
-
-# -------------------------------------------------------------------------- #
-# Champion
-# -------------------------------------------------------------------------- #
-
-# This strategy was submitted by Danny Champion to Axelrod’s second tournament
-# and operates in three phases. The first phase lasts for the first 1/20-th of
-# the rounds and Champion always cooperates. In the second phase, lasting
-# until 4/50-th of the rounds have passed, Champion mirrors its opponent’s
-# last move. In the last phase, Champion cooperates unless
-# - the opponent defected on the last round, and
-# - the opponent has cooperated less than 60% of the rounds, and
-# - a random number is greater than the proportion of rounds defected (*).
-
-# I assume it means defected *by the opponent*.
-
-champion = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:10) {
-		res <- TRUE
-	}
-	if(round %in% 11:16) {
-		res <- tail(o, 1)
-	}
-	if(round > 16) {
-		z <- sum(o)/length(o)
-		c1 <- !tail(o, 1)
-		c2 <- z < .6
-		c3 <- runif(1) > (1-z)
-		res <- ifelse(c1 & c2 & c3, FALSE, TRUE)
-	}
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
-# Tester
-# -------------------------------------------------------------------------- #
-
-# This strategy is a TFT variant that attempts to exploit certain strategies.
-# It defects on the first move. If the opponent ever defects, Tester
-# 'apologies' by cooperating and then plays TFT for the rest of the game.
-# Otherwise Tester alternates cooperation and defection.
-# This strategy came 46th in Axelrod’s second tournament.
-
-# Not sure I properly interpreded it. I assumed it defects first to see how
-# the opponent reacts to its defection. So it must do something at round 2
-# given it doesn't know yet what the reaction is. I assumed it collaborates.
-# Also, that version plays TFT if the opponent reacted negatively on the round
-# and alternates otherwhise.
-
-tester = function(p, o) {
-	round <- length(p)+1
-	if(round %in% 1:2) {
-		res <- c(FALSE, TRUE)[round]
-	} else {
-		if(! o[2]) {
-			res <- ifelse(round == 3, TRUE, tail(o, 1))
-		} else {
-			res <- !tail(p, 1)
-		}
-	}
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
-# Win-Stay-Lose-Shift
-# -------------------------------------------------------------------------- #
-
-# Cooperates first then, if the opponent cooperated on the last round, repeat
-# last move; otherwise, switch.
-
-wsls = function(p, o) {
-	r <- length(p)+1
-	if(r == 1) {
-		res <- TRUE
-	} else {
-		res <- ifelse(tail(o, 1), tail(p, 1), !tail(p, 1))
-	}
-	res
-}
-
-
-# -------------------------------------------------------------------------- #
-# AllC
-# -------------------------------------------------------------------------- #
-
-# Always cooperates.
-
-allc = function(p, o) TRUE
-
-
-# -------------------------------------------------------------------------- #
-# AllD
-# -------------------------------------------------------------------------- #
-
-# Always defects.
-
-alld = function(p, o) FALSE
-
-
-# -------------------------------------------------------------------------- #
-# Alternate
-# -------------------------------------------------------------------------- #
-
-# Cooperates first and then alternates.
-
-alt = function(p, o) {
-	round <- length(p)+1
-	res <- ifelse(round == 1, TRUE, !tail(p, 1))
-	return(res)
-}
-
-
-# -------------------------------------------------------------------------- #
-# Random
-# -------------------------------------------------------------------------- #
-
-# This strategy plays randomly (disregarding the history of play).
-# This strategy came 15th in Axelrod’s original tournament.
-
-rand = function(p, o) {
-	res <- sample(c(TRUE, FALSE), 1)
-	return(res)
-}
-
-
 # ========================================================================== #
 # Submitted algos
 # ========================================================================== #
+
+# These are the algos you have submitted.
 
 # -------------------------------------------------------------------------- #
 # Generous Tit-For-Tat In Cauda Venenum
@@ -546,40 +534,14 @@ rand = function(p, o) {
 # last round (hence, 'In Cauda Venenum').
 
 gtfticv = function(p, o) {
-  round <- length(p)+1
-	if(round %in% c(1, 200)) {
-		res <- round == 1
+	r <- length(p)+1
+	if(r %in% c(1, 2000)) {
+		res <- r == 1
 	} else {
 		res <- ifelse(tail(o, 1), T, sample(c(T, F), 1, p = 1:2))
 	}
-	return(res)
+	res
 }
 
 
-# ========================================================================== #
-# List of competitors
-# ========================================================================== #
-
-comp <- list(
-	allc = allc,
-	alld = alld,
-	alt = alt,
-	champion = champion, 
-	davis = davis,
-	eatherley = eatherley,
-	extort2 = extort2,
-	grofman = grofman,
-	grudger = grudger,
-	gtft = gtft,
-	joss = joss,
-	nydegger = nydegger,
-	rand = rand,
-	shubik = shubik,
-	tester = tester,
-	tf2t = tf2t,
-	tft = tft,
-	tullock = tullock,
-	wsls = wsls,
-	zdgtft2 = zdgtft2,
-	gtfticv = gtfticv)
 
