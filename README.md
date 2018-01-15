@@ -40,20 +40,21 @@ These are the standards that we impose on developers. Its reading is a little te
 Your algo must be a R function with the following structure:
 
 ``` R
-foo = function(p, o) {
+foo = function(p, o, n = 2000) {
     # do something
     return(res)
 }
 ```
 Where:
 * `foo` is the name of you function: **you may not use the name of an existing R function** (any function from the `datasets`, `utils`, `grDevices`, `graphics`, `stats` and `methods` packages) and you may not use a name already attributed to one of your competitor;
-* The arguments `p` and `o` are logical vector (e.g. `TRUE` or `FALSE`) representing the moves (cooperate of defect) of your algo (`p`) and the moves of you opponent (`o`) since the beginning of a match. At the beginning of the first round their length is 0 and they'll get one more item at each round. **You may not use any other argument** (a match will always be 200-rounds long: you don't need an aurgument for that).
+* The arguments `p` and `o` are logical vector (e.g. `TRUE` or `FALSE`) representing the moves (cooperate of defect) of your algo (`p`) and the moves of you opponent (`o`) since the beginning of a match. At the beginning of the first round their length is 0 and they'll get one more item at each round;
+* The arguments `n` is the number of rounds to be played in a match (defaults to 2000);
 * `res` is a logical vector of lenght 1: `TRUE` means that given `p` and `o` your algo cooperates and `FALSE` means it defects. **If your algo returns anything else, it will be disqualified**.
 
 For instance, here is the code for *Tit-For-Tat*:
 
 ``` R
-tft = function(p, o) {
+tft = function(p, o, n = 2000) {
 	# Number of round already played + 1 = current round
 	round <- length(p)+1
 	# If this is the first round cooperate (res == TRUE),
