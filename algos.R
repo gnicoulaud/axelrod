@@ -518,31 +518,3 @@ tester = function(p, o, n = 2000) {
 # adjusted.
 # Original code not available...
 # This strategy came 14th in Axelrod’s original tournament.
-
-
-# ========================================================================== #
-# Submitted algos
-# ========================================================================== #
-
-# These are the algos you have submitted.
-
-# -------------------------------------------------------------------------- #
-# Generous Tit-For-Tat In Cauda Venenum
-# -------------------------------------------------------------------------- #
-
-# By Damien Cormann.
-# A variation on 'Generous Tit-For-Tat' that systematically defaults on the
-# last round (hence, 'In Cauda Venenum').
-
-gtfticv = function(p, o, n = 2000) {
-	r <- length(p)+1
-	if(r %in% c(1, n)) {
-		res <- r == 1
-	} else {
-		res <- ifelse(tail(o, 1), T, sample(c(T, F), 1, p = 1:2))
-	}
-	res
-}
-
-
-
