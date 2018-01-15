@@ -174,7 +174,7 @@ extort2 = function(p, o) {
 		}
 		res <- sample(c(TRUE, FALSE), 1, prob = c(z, 1-z))
 	}
-	return(res)
+	res
 }
 
 
