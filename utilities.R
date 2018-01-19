@@ -33,8 +33,8 @@
 	p1 <- p2 <- integer(0)
 	if(is.null(n)) n <- sample(n.min:n.max, 1)
 	for(i in 1:n) {
-		si1 <- f1(s1, s2, n)
-		si2 <- f2(s2, s1, n)
+		si1 <- f1(s1, s2, n)[1]
+		si2 <- f2(s2, s1, n)[1]
 		s1 <- c(s1, si1)
 		s2 <- c(s2, si2)
 		p1 <- c(p1, m[si1+1, si2+1, 1])
