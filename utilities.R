@@ -51,21 +51,24 @@
 # -------------------------------------------------------------------------- #
 
 # Runs a tournament with algos provided in x, which must be a named list of
-# algos. For other arguments, see .match. (You need 'gtools' to run it.)
+# algos. For other arguments, see .match. Returns a matrix with scores of all
+# matches. Example:
+# res <- .tournament(x, 10) # 10-rounds matches
+# rowMeans(res, na.rm = TRUE) # Mean points earned by each algo.
 
 .tournament = function(x, n = 2000, t = 5, r = 3, p = 1, s = 0, n.min = 100,
 	n.max = 1000) {
-	I <- gtools:::combinations(N <- length(x), 2)
-	ans <- list()
-	length(ans) <- N
-	names(ans) <- names(x)
+	I <- t(combn(N <- length(x), 2))
+	nms <- names(x)
+	res <- matrix(NA, N, N)
+	dimnames(res) <- list(nms, nms)
 	for(i in 1:nrow(I)) {
 		j <- I[i, 1]
 		k <- I[i, 2]
 		z <- .match(x[[j]], x[[k]], n, t, r, p, s, n.min, n.max)
 		v <- unname(colSums(z$P))
-		ans[[j]] <- c(ans[[j]], v[1])
-		ans[[k]] <- c(ans[[k]], v[2])
+		res[j, k] <- v[1]
+		res[k, j] <- v[2]
 	}
-	sapply(ans, mean)
+	res
 }
