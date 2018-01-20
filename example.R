@@ -31,4 +31,5 @@ x <- list(alld = alld, allc = allc, rand = rand, tft = tft, alt = alt,
 
 (ans <- .tournament(x, 200))
 
-sort(ans)
+# Updated: Now .tournament returns a matrix:
+sort(rowMeans(ans, na.rm = TRUE))
